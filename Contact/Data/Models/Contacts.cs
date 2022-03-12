@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 
-namespace Contact;
-public class Contact
+namespace Contact.Data.Models;
+public class Contacts
 {
     public int      Id {get; set;}
     public string?  FirstName {get; set;}

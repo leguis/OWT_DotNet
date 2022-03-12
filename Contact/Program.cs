@@ -1,5 +1,5 @@
-global using Contact.Data;
 global using Microsoft.EntityFrameworkCore;
+global using Contact.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

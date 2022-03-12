@@ -1,3 +1,5 @@
+using Contact.Data;
+using Contact.Data.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Contact.Controllers;
@@ -13,7 +15,7 @@ public class ContactController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Contact>>> GetContacts() {
+    public async Task<ActionResult<List<Contacts>>> GetContacts() {
         var contacts = await _context.Contacts.ToListAsync();
         foreach (var contact in contacts)
         {
@@ -23,7 +25,7 @@ public class ContactController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Contact>> GetContact(int id) {
+    public async Task<ActionResult<Contacts>> GetContact(int id) {
         var contact = await _context.Contacts.FindAsync(id);
 
         if (contact == null)
@@ -33,7 +35,7 @@ public class ContactController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Contact>> PostContact(Contact request) {
+    public async Task<ActionResult<Contacts>> PostContact(Contacts request) {
         if (!request.IsValid())
             return BadRequest("Body not valid");
 
@@ -41,11 +43,11 @@ public class ContactController : ControllerBase
         _context.Contacts.Add(request);
         await _context.SaveChangesAsync();
         request.Decrypt();
-        
+
         return Ok(request);
     }
     [HttpPut("{id}")]
-    public async Task<ActionResult<Contact>> UpdateContact(int id, Contact request) {
+    public async Task<ActionResult<Contacts>> UpdateContact(int id, Contacts request) {
         if (!request.IsValid())
             return BadRequest("Body not valid");
 
@@ -69,7 +71,7 @@ public class ContactController : ControllerBase
 
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult<Contact>> RemoveContact(int id) {
+    public async Task<ActionResult<Contacts>> RemoveContact(int id) {
         var contact = await _context.Contacts.FindAsync(id);
 
         if (contact == null)
