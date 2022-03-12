@@ -1,5 +1,6 @@
-using Contact.Data;
 using Contact.Data.Models;
+using Contact.Data.ViewModels;
+using Contact.Data.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Contact.Controllers;
@@ -8,25 +9,21 @@ namespace Contact.Controllers;
 [Route("[controller]")]
 public class ContactController : ControllerBase
 {
-    private readonly DataContext _context;
+    private ContactService _contactService;
 
     public ContactController(DataContext context) {
-        _context = context;
+        _contactService = new ContactService(context);
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Contacts>>> GetContacts() {
-        var contacts = await _context.Contacts.ToListAsync();
-        foreach (var contact in contacts)
-        {
-            contact.Decrypt();
-        }
+    public async Task<ActionResult<List<ContactVM>>> GetContacts() {
+        var contacts = await _contactService.GetContacts();
         return Ok(contacts);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Contacts>> GetContact(int id) {
-        var contact = await _context.Contacts.FindAsync(id);
+    public async Task<ActionResult<ContactVM>> GetContact(int id) {
+        var contact = await _contactService.GetContact(id);
 
         if (contact == null)
             return NotFound("No contact with this id");
@@ -35,50 +32,37 @@ public class ContactController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Contacts>> PostContact(Contacts request) {
+    public async Task<ActionResult<ContactVM>> PostContact(ContactVM request) {
         if (!request.IsValid())
             return BadRequest("Body not valid");
 
         request.Encrypt();
-        _context.Contacts.Add(request);
-        await _context.SaveChangesAsync();
+        request = await _contactService.AddContact(request);
         request.Decrypt();
 
         return Ok(request);
     }
     [HttpPut("{id}")]
-    public async Task<ActionResult<Contacts>> UpdateContact(int id, Contacts request) {
+    public async Task<ActionResult<ContactVM>> UpdateContact(int id, ContactVM request) {
         if (!request.IsValid())
             return BadRequest("Body not valid");
 
-        var contact = await _context.Contacts.FindAsync(id);
+        var contact = await _contactService.PutContact(id, request);
 
         if (contact == null)
             return NotFound("No contact with this id");
 
-        contact.FirstName = request.FirstName;
-        contact.LastName = request.LastName;
-        contact.Address = request.Address;
-        contact.MobilePhone = request.MobilePhone;
-        contact.Email = request.Email;
-        contact.FullName = request.FullName;
-        contact.Encrypt();
-
-        await _context.SaveChangesAsync();
-        contact.Decrypt();
         return Ok(contact);
     }
 
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult<Contacts>> RemoveContact(int id) {
-        var contact = await _context.Contacts.FindAsync(id);
+    public async Task<ActionResult<ContactVM>> RemoveContact(int id) {
+        var contact = await _contactService.DeleteContact(id);
 
         if (contact == null)
             return NotFound("No contact with this id");
-        
-        _context.Contacts.Remove(contact);
-        contact.Decrypt();
+
         return Ok(contact);
     }
 }
